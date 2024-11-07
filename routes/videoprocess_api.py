@@ -26,6 +26,7 @@ def task_wrapper(video_path, queue):
 
 @router.post("/create-process")
 async def create_process(file: UploadFile = File(...)):
+    print("File Downloading...")
     random_string = str(uuid.uuid4())
     base_name, extension = os.path.splitext(file.filename)
     new_file_name = f"{base_name}_{random_string}{extension}"
@@ -33,7 +34,7 @@ async def create_process(file: UploadFile = File(...)):
     
     with open(file_location, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
-    
+    print("Processing...")
     # Create a Queue to receive the output video path from the task
     queue = multiprocessing.Queue()
 
