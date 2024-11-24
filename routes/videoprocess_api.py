@@ -17,13 +17,14 @@ router = APIRouter()
 process_queues = {}
 
 # Function to wrap the call to process_video_with_yolo
-def task_wrapper(video_path, queue):
+def task_wrapper(video_path, queue, target_class=[0]):
     try:
-        output_video_path = process_video_with_yolo(video_path)
+        output_video_path = process_video_with_yolo(video_path, target_class)
         filename_with_extension = os.path.basename(output_video_path)
         queue.put({"status": "completed", "result": filename_with_extension})
     except Exception as e:
         queue.put({"status": "error", "result": str(e)})
+
 
 @router.post("/create-process")
 async def create_process(file: UploadFile = File(...)):
@@ -39,8 +40,9 @@ async def create_process(file: UploadFile = File(...)):
     # Create a Queue to receive the output video path from the task
     queue = multiprocessing.Queue()
 
+    target_class = [3]
     # Create a Process that will execute the task_wrapper function
-    process = multiprocessing.Process(target=task_wrapper, args=(file_location, queue))
+    process = multiprocessing.Process(target=task_wrapper, args=(file_location, queue, target_class))
 
     # Start the process
     process.start()
@@ -50,6 +52,36 @@ async def create_process(file: UploadFile = File(...)):
 
     # Return the process ID (task ID)
     return {"task_id": process.pid}
+
+
+@router.post("/create-process1")
+async def create_process(file: UploadFile = File(...)):
+    print("File Downloading...")
+    random_string = str(uuid.uuid4())
+    base_name, extension = os.path.splitext(file.filename)
+    new_file_name = f"{base_name}_{random_string}{extension}"
+    file_location = f"videos/source/{new_file_name}"
+    
+    with open(file_location, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+    print("Processing...")
+    # Create a Queue to receive the output video path from the task
+    queue = multiprocessing.Queue()
+    
+    target_class = [0]
+
+    # Create a Process that will execute the task_wrapper function
+    process = multiprocessing.Process(target=task_wrapper, args=(file_location, queue, target_class))
+
+    # Start the process
+    process.start()
+
+    # Store the queue in the global dictionary using the process ID
+    process_queues[process.pid] = queue
+
+    # Return the process ID (task ID)
+    return {"task_id": process.pid}
+
 
 @router.get("/get-result/{task_id}")
 async def get_result(task_id: int):
