@@ -15,10 +15,10 @@ def process_video_with_yolo(video_path, target_class=[3]):
     fps = int(cap.get(cv2.CAP_PROP_FPS))
 
     # Define the codec and create VideoWriter object
-    fourcc = cv2.VideoWriter_fourcc(*'MJPG')  # or 'XVID' if you prefer
+    fourcc = cv2.VideoWriter_fourcc(*'avc1')  # or 'XVID' if you prefer
     file_name_with_extension = os.path.basename(video_path)
     file_name, file_extension = os.path.splitext(file_name_with_extension)
-    output_video_path = f"videos/result/{file_name}_output.avi"
+    output_video_path = f"videos/result/{file_name}_output.mp4"
     out = cv2.VideoWriter(output_video_path, fourcc, fps, (frame_width, frame_height))
 
     # Loop through the video frames
