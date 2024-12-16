@@ -23,7 +23,6 @@ def task_wrapper(video_path, queue, target_class=[0]):
         output_video_path = process_video_with_yolo(video_path, target_class)
         filename_with_extension = os.path.basename(output_video_path)
         
-        video_path_s = Path(f"videos/source/{filename_with_extension}")
         
         queue.put({"status": "completed", "result": filename_with_extension})
     except Exception as e:
