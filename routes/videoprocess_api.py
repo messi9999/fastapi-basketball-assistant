@@ -149,5 +149,8 @@ def stream_video(filename: str):
         def iter_file():
             with open(video_path, "rb") as f:
                 yield from f
-        return StreamingResponse(iter_file(), media_type="video/mp4")
+        
+        headers = {"Content-Length": str(video_path.stat().st_size)}
+        return StreamingResponse(iter_file(), media_type="video/mp4", headers=headers)
+    
     return {"error": "Video not found"}
