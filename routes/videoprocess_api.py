@@ -5,6 +5,7 @@ import shutil
 import multiprocessing
 from pathlib import Path
 from utils.utils import process_video_with_yolo
+import re
 
 import uuid
 
@@ -142,15 +143,34 @@ async def download_video(filename: str):
 #     return FileResponse(output_path, headers={"Content-Disposition": "attachment; filename=video.mp4"})
 
 
+from fastapi.responses import Response
+
 @router.get("/stream/{filename}")
-def stream_video(filename: str):
+def stream_video(filename: str, range: str = None):
     video_path = Path(f"videos/result/{filename}")
-    if video_path.exists():
-        def iter_file():
-            with open(video_path, "rb") as f:
-                yield from f
-        
-        headers = {"Content-Length": str(video_path.stat().st_size)}
-        return StreamingResponse(iter_file(), media_type="video/mp4", headers=headers)
-    
-    return {"error": "Video not found"}
+    if not video_path.exists():
+        return {"error": "Video not found"}
+
+    file_size = video_path.stat().st_size
+    start = 0
+    end = file_size - 1
+
+    if range:
+        match = re.match(r"bytes=(\d+)-(\d*)", range)
+        if match:
+            start = int(match.group(1))
+            if match.group(2):
+                end = int(match.group(2))
+
+    chunk_size = (end - start) + 1
+    with open(video_path, "rb") as f:
+        f.seek(start)
+        data = f.read(chunk_size)
+
+    headers = {
+        "Content-Range": f"bytes {start}-{end}/{file_size}",
+        "Accept-Ranges": "bytes",
+        "Content-Length": str(chunk_size),
+    }
+
+    return Response(data, status_code=206, headers=headers, media_type="video/mp4")
