@@ -3,3 +3,4 @@ fastapi
 opencv-python
 ultralytics
 pydantic
+python-multipart
