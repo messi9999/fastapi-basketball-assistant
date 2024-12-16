@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, UploadFile, File, FastAPI, Header, Response
-from fastapi.responses import JSONResponse, FileResponse
+from fastapi.responses import JSONResponse, FileResponse, StreamingResponse
 import os
 import shutil
 import multiprocessing
@@ -128,3 +128,14 @@ async def download_video(filename: str):
 #     # torch.cuda.empty_cache()
 #     # Return the file with Content-Disposition header set to 'attachment' to force download
 #     return FileResponse(output_path, headers={"Content-Disposition": "attachment; filename=video.mp4"})
+
+
+@router.get("/stream/{filename}")
+def stream_video(filename: str):
+    video_path = Path(f"videos/result/{filename}")
+    if video_path.exists():
+        def iter_file():
+            with open(video_path, "rb") as f:
+                yield from f
+        return StreamingResponse(iter_file(), media_type="video/mp4")
+    return {"error": "Video not found"}
