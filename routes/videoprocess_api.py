@@ -4,7 +4,7 @@ import os
 import shutil
 import multiprocessing
 from pathlib import Path
-from utils.utils import process_video_with_yolo
+from utils.utils import process_video_with_yolo, process_video_with_yolo_and_pose
 import re
 
 import uuid
@@ -27,10 +27,20 @@ def task_wrapper(video_path, queue, target_class=[0]):
         queue.put({"status": "completed", "result": filename_with_extension})
     except Exception as e:
         queue.put({"status": "error", "result": str(e)})
+# Function to wrap the call to process_video_with_yolo
+def task_wrapper2(video_path, queue, target_class=[0]):
+    try:
+        output_video_path = process_video_with_yolo_and_pose(video_path, target_class)
+        filename_with_extension = os.path.basename(output_video_path)
+        
+        
+        queue.put({"status": "completed", "result": filename_with_extension})
+    except Exception as e:
+        queue.put({"status": "error", "result": str(e)})
 
 
-@router.post("/create-process")
-async def create_process(file: UploadFile = File(...)):
+@router.post("/create-process-player")
+async def create_process_player(file: UploadFile = File(...)):
     print("File Downloading...")
     random_string = str(uuid.uuid4())
     base_name, extension = os.path.splitext(file.filename)
@@ -57,8 +67,8 @@ async def create_process(file: UploadFile = File(...)):
     return {"task_id": process.pid}
 
 
-@router.post("/create-process1")
-async def create_process(file: UploadFile = File(...)):
+@router.post("/create-process-ball")
+async def create_process_ball(file: UploadFile = File(...)):
     print("File Downloading...")
     random_string = str(uuid.uuid4())
     base_name, extension = os.path.splitext(file.filename)
@@ -75,6 +85,34 @@ async def create_process(file: UploadFile = File(...)):
 
     # Create a Process that will execute the task_wrapper function
     process = multiprocessing.Process(target=task_wrapper, args=(file_location, queue, target_class))
+
+    # Start the process
+    process.start()
+
+    # Store the queue in the global dictionary using the process ID
+    process_queues[process.pid] = queue
+
+    # Return the process ID (task ID)
+    return {"task_id": process.pid}
+
+@router.post("/create-process-pose")
+async def create_process_pose(file: UploadFile = File(...)):
+    print("File Downloading...")
+    random_string = str(uuid.uuid4())
+    base_name, extension = os.path.splitext(file.filename)
+    new_file_name = f"{base_name}_{random_string}{extension}"
+    file_location = f"videos/source/{new_file_name}"
+    
+    with open(file_location, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+    print("Processing...")
+    # Create a Queue to receive the output video path from the task
+    queue = multiprocessing.Queue()
+    
+    target_class = [0]
+
+    # Create a Process that will execute the task_wrapper function
+    process = multiprocessing.Process(target=task_wrapper2, args=(file_location, queue, target_class))
 
     # Start the process
     process.start()
