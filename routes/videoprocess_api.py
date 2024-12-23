@@ -28,7 +28,7 @@ def task_wrapper(video_path, queue, target_class=[0]):
     except Exception as e:
         queue.put({"status": "error", "result": str(e)})
 # Function to wrap the call to process_video_with_yolo
-def task_wrapper2(video_path, queue, target_class=[0]):
+def task_wrapper2(video_path, queue, target_class=[3]):
     try:
         output_video_path = process_video_with_yolo_and_pose(video_path, target_class)
         filename_with_extension = os.path.basename(output_video_path)
