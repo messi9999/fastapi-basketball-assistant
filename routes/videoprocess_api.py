@@ -109,7 +109,7 @@ async def create_process_pose(file: UploadFile = File(...)):
     # Create a Queue to receive the output video path from the task
     queue = multiprocessing.Queue()
     
-    target_class = [0]
+    target_class = [3]
 
     # Create a Process that will execute the task_wrapper function
     process = multiprocessing.Process(target=task_wrapper2, args=(file_location, queue, target_class))
