@@ -1,7 +1,7 @@
 uvicorn
 fastapi
-opencv-python
-ultralytics
+# opencv-python
+# ultralytics
 pydantic
 python-multipart
 mediapipe
