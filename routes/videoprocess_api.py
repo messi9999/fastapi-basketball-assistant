@@ -1,5 +1,6 @@
-from fastapi import APIRouter, HTTPException, UploadFile, File, FastAPI, Header, Response
-from fastapi.responses import JSONResponse, FileResponse, StreamingResponse
+from fastapi import APIRouter, HTTPException, UploadFile, File, FastAPI, Header, Response, Form
+from typing import List
+from fastapi.responses import JSONResponse, FileResponse, StreamingResponse, Response
 import os
 import shutil
 import multiprocessing
@@ -7,7 +8,13 @@ from pathlib import Path
 from utils.utils import process_video_with_yolo, process_video_with_yolo_and_pose
 import re
 
+from dotenv import load_dotenv
+
+from utils import utils
+
 import uuid
+
+load_dotenv()
 
 # Initialize FastAPI app
 app = FastAPI()
@@ -155,23 +162,6 @@ async def download_video(filename: str):
     return FileResponse(path=video_path,  headers={"Content-Disposition": f"attachment; filename={filename}"})
 
 
-# @app.get("/download_video")
-# async def download_video():
-#     # Path to the generated video file
-#     output_dir = './output'
-#     output_path = os.path.join(output_dir, 'video.mp4')
-#     # Ensure the output directory exists
-#     if not os.path.exists(output_dir):
-#         os.makedirs(output_dir)
-#     # Ensure the file exists before returning it
-#     if not os.path.exists(output_path):
-#         raise HTTPException(status_code=404, detail="Video file not found.")
-#     # torch.cuda.empty_cache()
-#     # Return the file with Content-Disposition header set to 'attachment' to force download
-#     return FileResponse(output_path, headers={"Content-Disposition": "attachment; filename=video.mp4"})
-
-
-from fastapi.responses import Response
 
 @router.get("/stream/{filename}")
 def stream_video(filename: str, range: str = None):
@@ -202,3 +192,23 @@ def stream_video(filename: str, range: str = None):
     }
 
     return Response(data, status_code=206, headers=headers, media_type="video/mp4")
+
+
+@router.post("/upload")
+async def upload_images(files: List[UploadFile] = File(...)):
+    """
+    FastAPI endpoint to upload multiple images and send them to GPT-4.
+    """
+    image_paths = []
+    for file in files:
+        file_path = f"./videos/source/temp_{file.filename}"
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        image_paths.append(file_path)
+    
+    api_key = os.getenv("API_KEY")
+    prompt = "I uploaded the screenshot of basketball playing and shooting. Please give me advices to upgrade player's skills."
+    
+    response = utils.send_image_to_gpt4(api_key, image_paths, prompt)
+    return {"response": response}
+

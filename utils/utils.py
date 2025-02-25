@@ -5,6 +5,9 @@ import numpy as np
 import subprocess
 import mediapipe as mp
 
+import base64
+import requests
+
 def process_video_with_yolo_and_pose(video_path, target_class=[3]):
     # Load the YOLO model
     model = YOLO("models/best1.pt")
@@ -168,3 +171,54 @@ def process_video_with_yolo(video_path, target_class=[3]):
     os.remove(video_path)
 
     return output_video_path
+
+
+def send_image_to_gpt4(api_key, image_paths, prompt):
+    """
+    Sends an image along with a prompt to OpenAI's GPT-4 API and returns the response.
+    
+    :param api_key: Your OpenAI API key.
+    :param image_path: Path to the image file to send.
+    :param prompt: The text prompt to send along with the image.
+    :return: Response from GPT-4.
+    """
+    base64_images = []
+    for image_path in image_paths:
+        with open(image_path, "rb") as image_file:
+            base64_images.append(f"data:image/jpeg;base64,{base64.b64encode(image_file.read()).decode('utf-8')}")
+    
+    print("opened image!!!")
+    
+    
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
+    
+    data = {
+        "model": "gpt-4-turbo-2024-04-09",  # Ensure the model supports vision inputs
+        "messages": [
+            {"role": "system", "content": "You are an AI assistant that can analyze images and text."},
+            {"role": "user", "content": [
+                {"type": "text", "text": prompt},
+            ] + [{"type": "image_url", "image_url": {"url": img}} for img in base64_images]}
+        ],
+        "max_tokens": 500
+    }
+    
+    print("sending request....")
+    
+    response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=data)
+    
+    print("Got response!!!")
+    # Remove the image after getting the response
+    for image_path in image_paths:
+        try:
+            os.remove(image_path)
+        except Exception as e:
+            print(f"Error deleting file {image_path}: {e}")
+    
+    if response.status_code == 200:
+        return response.json()["choices"][0]["message"]["content"]
+    else:
+        return f"Error: {response.status_code}, {response.text}"

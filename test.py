@@ -1,7 +1,9 @@
-from PIL import Image
 
-from ultralytics import YOLO
 
-from utils import utils
+# from utils import utils
 
-utils.process_video_with_yolo("videos/source/1.mp4", target_class=[0, 3])
+
+# image_path = ["1.png", "2.jpg", "3.png"]
+# prompt = "what does this image for?"
+
+# print(utils.send_image_to_gpt4(api_key, image_path, prompt))

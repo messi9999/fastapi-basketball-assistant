@@ -3,6 +3,8 @@ from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
+import uvicorn
+
 
 from routes import videoprocess_api
 
@@ -30,4 +32,5 @@ async def root():
     except Exception as e:
         raise HTTPException(status_code=500, detail="Internal server error")
     
-#
+if __name__ == "__main__":
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
