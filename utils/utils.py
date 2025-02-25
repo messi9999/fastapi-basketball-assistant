@@ -3,7 +3,7 @@ import os
 # from ultralytics import YOLO
 import numpy as np
 import subprocess
-import mediapipe as mp
+# import mediapipe as mp
 
 import base64
 import requests

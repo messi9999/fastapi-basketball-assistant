@@ -4,4 +4,4 @@ fastapi
 # ultralytics
 pydantic
 python-multipart
-mediapipe
+# mediapipe
