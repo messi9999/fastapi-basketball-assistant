@@ -1,7 +1,7 @@
 import os
 # import cv2
 # from ultralytics import YOLO
-import numpy as np
+# import numpy as np
 import subprocess
 # import mediapipe as mp
 

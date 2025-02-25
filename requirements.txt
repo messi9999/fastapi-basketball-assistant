@@ -5,3 +5,4 @@ fastapi
 pydantic
 python-multipart
 # mediapipe
+python-dotenv
