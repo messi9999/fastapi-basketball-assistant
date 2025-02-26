@@ -203,7 +203,7 @@ def send_image_to_gpt4(api_key, image_paths, prompt):
                 {"type": "text", "text": prompt},
             ] + [{"type": "image_url", "image_url": {"url": img}} for img in base64_images]}
         ],
-        "max_tokens": 500
+        "max_tokens": 2000
     }
     
     print("sending request....")
