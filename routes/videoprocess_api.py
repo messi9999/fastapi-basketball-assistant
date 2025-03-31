@@ -212,3 +212,23 @@ async def upload_images(files: List[UploadFile] = File(...)):
     response = utils.send_image_to_gpt4(api_key, image_paths, prompt)
     return {"response": response}
 
+
+
+@router.post("/upload2")
+async def upload_images2(files: List[UploadFile] = File(...)):
+    """
+    FastAPI endpoint to upload multiple images and send them to GPT-4.
+    """
+    image_paths = []
+    for file in files:
+        file_path = f"./videos/source/temp_{file.filename}"
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        image_paths.append(file_path)
+    
+    api_key = os.getenv("API_KEY")
+    prompt = "I attached the screenshots of my basketball forms. At the first please check the images very carefully and give me advice what is wrong in forms. Give me maximumn 6 sentences for each image. Give me raw text without any symbols"
+    
+    response = utils.send_image_to_gpt4(api_key, image_paths, prompt)
+    return {"response": response}
+
