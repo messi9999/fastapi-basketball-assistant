@@ -207,7 +207,7 @@ async def upload_images(files: List[UploadFile] = File(...)):
         image_paths.append(file_path)
     
     api_key = os.getenv("API_KEY")
-    prompt = "I attached the screenshots of my weightlifting forms. At the first please check the images very carefully and give me advice what is wrong in forms. Give me maximumn 6 sentences for each image. Give me raw text without any symbols"
+    prompt = "I attached the screenshots of my weightlifting forms. At the first please check the images very carefully and give me advice what is wrong in forms. Give me maximumn 6 sentences for each image. Give me raw text without any symbols. If the images are not related with weightlifting, please ask to upload weightlifting related images."
     
     response = utils.send_image_to_gpt4(api_key, image_paths, prompt)
     return {"response": response}
@@ -227,7 +227,7 @@ async def upload_images2(files: List[UploadFile] = File(...)):
         image_paths.append(file_path)
     
     api_key = os.getenv("API_KEY")
-    prompt = "I attached the screenshots of my basketball forms. At the first please check the images very carefully and give me advice what is wrong in forms. Give me maximumn 6 sentences for each image. Give me raw text without any symbols"
+    prompt = "I attached the screenshots of my basketball forms. At the first please check the images very carefully and give me advice what is wrong in forms. Give me maximumn 6 sentences for each image. Give me raw text without any symbols. If the images are not related with basketball, please ask to upload basketball related images."
     
     response = utils.send_image_to_gpt4(api_key, image_paths, prompt)
     return {"response": response}
